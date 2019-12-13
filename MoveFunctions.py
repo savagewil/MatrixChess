@@ -6,11 +6,26 @@ NUMBERS = "1234567890"
 ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
 
-def create_move_matrices(move_array):
-    pre_matrix = None
-    post_matrix = None
-    elimination_matrix = None
-    return pre_matrix, elimination_matrix, post_matrix
+def create_move_matrices(board_length, board_width, move_array):
+    pre_matrices = None
+    post_matrices = None
+    move_count_array = []
+    for moves in move_array:
+        split_moves = moves.split(",")
+        move_count_array.append(len(split_moves))
+        for move in split_moves:
+            pre_matrix, post_matrix = create_one_move(move)
+            if pre_matrices is None:
+                pre_matrices = pre_matrix
+            else:
+                pre_matrices = np.concatenate((pre_matrices, pre_matrix), 0)
+
+            if post_matrices is None:
+                post_matrices = post_matrix
+            else:
+                post_matrices = np.concatenate((post_matrices, post_matrix), 0)
+    elimination_matrix = create_elimination_matrix(board_length, board_width, move_count_array)
+    return pre_matrices, elimination_matrix, post_matrices
 
 
 def create_elimination_matrix(board_length, board_width, move_count_array):
@@ -29,36 +44,25 @@ def create_one_move(move: str,
                     DOWN=TranslationMatrices.DOWN,
                     FORWARD=TranslationMatrices.FORWARD,
                     BACKWARD=TranslationMatrices.BACKWARD):
-    up, down, forward, backward = move_string_to_directions
+    up, down, forward, backward = move_string_to_directions(move)
 
-    pre_matrix = None
-    post_matrix = None
+    pre_matrix = np.eye(UP.shape[0])
+    post_matrix = np.eye(UP.shape[0])
 
     if up > down:
         for i in range(up - down):
-            if pre_matrix is None:
-                pre_matrix = UP
-            else:
-                pre_matrix = np.dot(pre_matrix, UP)
+            pre_matrix = np.dot(pre_matrix, UP)
     elif down > up:
         for i in range(down - up):
-            if pre_matrix is None:
-                pre_matrix = DOWN
-            else:
-                pre_matrix = np.dot(pre_matrix, DOWN)
+            pre_matrix = np.dot(pre_matrix, DOWN)
 
     if forward > backward:
         for i in range(forward - backward):
-            if post_matrix is None:
-                post_matrix = FORWARD
-            else:
-                post_matrix = np.dot(post_matrix, FORWARD)
+            post_matrix = np.dot(post_matrix, FORWARD)
     elif backward < forward:
         for i in range(backward - forward):
-            if post_matrix is None:
-                post_matrix = BACKWARD
-            else:
-                post_matrix = np.dot(post_matrix, BACKWARD)
+            post_matrix = np.dot(post_matrix, BACKWARD)
+
     return pre_matrix, post_matrix
 
 
@@ -101,5 +105,13 @@ def move_string_to_directions(move: str):
     return up, down, forward, backward
 
 if __name__ == '__main__':
-    elimination_matrix = create_elimination_matrix(8,8,[2,1,1,1])
+    LENGTH = 8
+    WIDTH = 8
+    MOVES = ["uu,d","f"]
+    pre_matrices, elimination_matrix, post_matrices = create_move_matrices(LENGTH, WIDTH, MOVES)
+    print(display_board(pre_matrices))
+    print("=================")
     print(display_board(elimination_matrix))
+    print("=================")
+    print(display_board(post_matrices))
+    print("=================")
