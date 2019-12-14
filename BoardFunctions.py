@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def display_board(board):
+def display_board_matrix(board):
     string = ""
     for j in range(len(board)):
         if j != 0 and j % 8 == 0:
@@ -12,6 +12,18 @@ def display_board(board):
             string += "%d" % board[j, i]
 
         string += "\n"
+    return string
+
+
+def display_board_arrays(board):
+    string = ""
+
+    for a in board:
+        string += "\n"
+        for b in a:
+            string += "\n"
+            for c in b:
+                string += "%d" % (c)
     return string
 
 
